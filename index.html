@@ -1,157 +1,397 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Low Cortisol MP — Kurulum Rehberi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --obsidian:  #0a0a0f;
+      --stone:     #141418;
+      --stone2:    #1e1e24;
+      --stone3:    #2a2a32;
+      --border:    #38383f;
+      --emerald:   #4ade80;
+      --emerald2:  #22c55e;
+      --emerald-d: #14532d;
+      --emerald-g: rgba(74,222,128,0.18);
+      --lava:      #fb923c;
+      --lava-g:    rgba(251,146,60,0.18);
+      --diamond:   #67e8f9;
+      --text:      #d4d4d8;
+      --text-dim:  #71717a;
+      --text-faint:#3f3f46;
+      --scan: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.18) 2px,rgba(0,0,0,0.18) 4px);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{background:var(--obsidian);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:15px;line-height:1.7;cursor:crosshair;overflow-x:hidden;}
+    body::after{content:'';position:fixed;inset:0;background:var(--scan);pointer-events:none;z-index:9999;opacity:0.4;}
+    ::-webkit-scrollbar{width:6px;}
+    ::-webkit-scrollbar-track{background:var(--stone);}
+    ::-webkit-scrollbar-thumb{background:var(--emerald-d);}
 
-<html>
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="stylesheet" href="assets/css/main.css" />
-		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
-	</head>
-	<body class="is-preload">
+    @keyframes flicker{0%,100%{opacity:1;}92%{opacity:1;}93%{opacity:0.7;}95%{opacity:1;}97%{opacity:0.8;}}
+    @keyframes glow-pulse{0%,100%{text-shadow:0 0 8px var(--emerald),0 0 20px var(--emerald-g);}50%{text-shadow:0 0 18px var(--emerald),0 0 50px var(--emerald-g),0 0 80px rgba(74,222,128,0.08);}}
+    @keyframes lava-pulse{0%,100%{text-shadow:0 0 8px var(--lava),0 0 20px var(--lava-g);}50%{text-shadow:0 0 18px var(--lava),0 0 50px var(--lava-g);}}
+    @keyframes slide-up{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+    @keyframes cursor-blink{0%,100%{opacity:1;}50%{opacity:0;}}
+    @keyframes ore-shimmer{0%,100%{opacity:0.6;}50%{opacity:1;}}
+    @keyframes float{0%,100%{transform:translateY(0px);}50%{transform:translateY(-8px);}}
+    @keyframes scandown{0%{transform:translateY(-100%);}100%{transform:translateY(100vh);}}
 
-		<!-- Wrapper -->
-			<div id="wrapper">
+    /* NAV */
+    #nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,15,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:56px;}
+    .nav-brand{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--emerald);animation:glow-pulse 3s ease-in-out infinite;letter-spacing:1px;}
+    .nav-brand span{color:var(--lava);animation:lava-pulse 3s ease-in-out infinite;}
+    .nav-links{display:flex;gap:32px;list-style:none;align-items:center;}
+    .nav-links a{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-dim);text-decoration:none;letter-spacing:1px;transition:color 0.2s;position:relative;padding-bottom:2px;}
+    .nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:var(--emerald);transition:width 0.25s;}
+    .nav-links a:hover{color:var(--emerald);}
+    .nav-links a:hover::after{width:100%;}
+    .nav-links .nav-btn{padding:9px 14px;font-size:7px;line-height:1;vertical-align:middle;margin:0;padding-bottom:9px;}
+    .nav-links .nav-btn::after{display:none !important;}
 
-				<!-- Header -->
-					<header id="header" class="alt">
-						<span class="logo"><img src="images/logo.svg" alt="" /></span>
-						<h1>Low Cortisol Minecraft MP</h1>
-						<p>Modlu Minecraft Kurulum Rehberi<br />
-						<a href="https://steamcommunity.com/id/restinpeacearthurmorgan/">Low Cortisol Gaming</a> tarafından
-					</header>
+    /* HERO */
+    #hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 40px 60px;position:relative;overflow:hidden;}
+    #hero::before{content:'';position:absolute;inset:0;background-image:linear-gradient(var(--stone3) 1px,transparent 1px),linear-gradient(90deg,var(--stone3) 1px,transparent 1px);background-size:48px 48px;opacity:0.35;animation:flicker 8s infinite;}
+    #hero::after{content:'';position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--emerald),transparent);animation:scandown 6s linear infinite;opacity:0.3;pointer-events:none;}
+    .hero-tag{font-size:11px;color:var(--lava);letter-spacing:4px;text-transform:uppercase;margin-bottom:24px;animation:slide-up 0.6s ease both;position:relative;z-index:1;}
+    .ascii-art{font-family:'Share Tech Mono',monospace;font-size:clamp(5px,0.85vw,10px);line-height:1.1;color:var(--emerald2);text-shadow:0 0 8px var(--emerald-g);margin-bottom:40px;animation:slide-up 0.7s ease 0.1s both,float 6s ease-in-out infinite 1s;white-space:pre;text-align:center;position:relative;z-index:1;opacity:0.9;}
+    .hero-title{font-family:'Press Start 2P',monospace;font-size:clamp(16px,3.5vw,32px);color:var(--emerald);text-align:center;line-height:1.5;margin-bottom:16px;animation:slide-up 0.8s ease 0.2s both,glow-pulse 4s ease-in-out infinite 1s;position:relative;z-index:1;}
+    .hero-title span{color:var(--lava);animation:lava-pulse 4s ease-in-out infinite;}
+    .hero-sub{color:var(--text-dim);font-size:14px;text-align:center;margin-bottom:8px;animation:slide-up 0.9s ease 0.3s both;position:relative;z-index:1;}
+    .hero-sub a{color:var(--diamond);text-decoration:none;border-bottom:1px solid rgba(103,232,249,0.3);}
+    .hero-sub a:hover{color:#fff;border-color:var(--diamond);}
+    .cursor-line{font-size:13px;color:var(--text-faint);margin-top:6px;animation:slide-up 1s ease 0.4s both;position:relative;z-index:1;}
+    .cursor-line::after{content:'█';color:var(--emerald);animation:cursor-blink 1s step-end infinite;}
+    .hero-btns{display:flex;gap:16px;margin-top:48px;flex-wrap:wrap;justify-content:center;animation:slide-up 1s ease 0.5s both;position:relative;z-index:1;}
 
-				<!-- Nav -->
-					<nav id="nav">
-						<ul>
-							<li><a href="#intro" class="active">Başlangıç</a></li>
-							<li><a href="#first">Mod Kurulumu</a></li>
-							<li><a href="#second">Server Durumu</a></li>
-							<li><a href="#cta">Serveri Başlat</a></li>
-						</ul>
-					</nav>
+    /* BUTTONS */
+    .btn{font-family:'Press Start 2P',monospace;font-size:9px;padding:14px 28px;border:2px solid;text-decoration:none;letter-spacing:1px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;display:inline-block;}
+    .btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);transition:left 0.4s;}
+    .btn:hover::before{left:100%;}
+    .btn-primary{background:var(--emerald-d);color:var(--emerald);border-color:var(--emerald);box-shadow:0 0 20px var(--emerald-g);}
+    .btn-primary:hover{background:#166534;box-shadow:0 0 35px rgba(74,222,128,0.3);transform:translateY(-2px);}
+    .btn-secondary{background:transparent;color:var(--text-dim);border-color:var(--border);}
+    .btn-secondary:hover{color:var(--text);border-color:var(--text-dim);transform:translateY(-2px);}
 
+    /* ORE DIVIDER */
+    .ore-divider{display:flex;align-items:center;gap:12px;padding:0 40px;}
+    .ore-divider::before,.ore-divider::after{content:'';flex:1;height:1px;}
+    .ore-divider::before{background:linear-gradient(90deg,transparent,var(--border));}
+    .ore-divider::after{background:linear-gradient(90deg,var(--border),transparent);}
+    .ore-gem{font-size:18px;animation:ore-shimmer 2s ease-in-out infinite;}
 
+    /* DEPTH BAR */
+    .depth-bar{display:flex;align-items:center;gap:16px;padding:12px 40px;background:var(--stone);border-top:1px solid var(--border);border-bottom:1px solid var(--border);font-size:11px;color:var(--text-faint);letter-spacing:2px;}
+    .depth-bar span{color:var(--lava);}
 
+    /* SECTIONS */
+    section{padding:80px 40px;max-width:1100px;margin:0 auto;}
+    .section-label{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--lava);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+    .section-label::before{content:'';display:inline-block;width:24px;height:2px;background:var(--lava);}
+    .section-title{font-family:'Press Start 2P',monospace;font-size:clamp(13px,2vw,20px);color:var(--text);line-height:1.6;margin-bottom:24px;}
+    .section-title em{color:var(--emerald);font-style:normal;}
 
+    /* LAYOUT */
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;}
+    .two-col.reverse{direction:rtl;}
+    .two-col.reverse>*{direction:ltr;}
 
-					
-				<!-- Main -->
-					<div id="main">
+    /* TERMINAL */
+    .terminal{background:var(--stone);border:1px solid var(--border);border-top:3px solid var(--emerald);}
+    .terminal-bar{background:var(--stone2);padding:8px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);font-size:10px;color:var(--text-faint);}
+    .t-dot{width:10px;height:10px;border-radius:50%;}
+    .t-dot.red{background:#ef4444;}.t-dot.yel{background:#eab308;}.t-dot.grn{background:var(--emerald2);}
+    .terminal-body{padding:20px;}
+    .t-line{margin-bottom:6px;}
+    .t-prompt{color:var(--emerald);}.t-cmd{color:var(--text);}.t-out{color:var(--text-dim);padding-left:16px;}.t-warn{color:var(--lava);padding-left:16px;}.t-ok{color:var(--emerald2);padding-left:16px;}
 
-						<!-- Introduction -->
-							<section id="intro" class="main">
-								<div class="spotlight">
-									<div class="content">
-										<header class="major">
-											<h2>Server'a giriş yapman için yüklemen gerekenler</h2>
-										</header>
-										<p>NeoForge | (Minecraft Versiyon 1.21.1), <a href="https://neoforged.net/">NeoForge</a> ile çalışmaktadır.<br>
-										
-										Mod listesi | Mod Listesine Ulaşmak için Tıklayın<br><br>
-										<span style="font-size: 1.2em;">Hepsini aynı anda indirmek için butona tıklayın.</span></p>
-										<ul class="actions">
-											<li><a href="generic.html" class="button">Indir</a></li>
-										</ul>
-									</div>
-									<span class="image" style="border-radius: 0; border: none; padding: 0;"><img src="assets/css/images/creeper.png" alt="" style="border-radius: 0;" /></span>
-								</div>
-							</section>
+    /* STEPS */
+    .steps{display:flex;flex-direction:column;gap:16px;}
+    .step-card{background:var(--stone);border:1px solid var(--border);border-left:3px solid var(--emerald);padding:20px 24px;display:flex;gap:20px;align-items:flex-start;transition:border-color 0.2s,background 0.2s;}
+    .step-card:hover{background:var(--stone2);border-left-color:var(--lava);}
+    .step-num{font-family:'Press Start 2P',monospace;font-size:18px;color:var(--emerald-d);line-height:1;min-width:32px;}
+    .step-card:hover .step-num{color:var(--lava);}
+    .step-text h4{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--text);margin-bottom:6px;letter-spacing:1px;}
+    .step-text p{color:var(--text-dim);font-size:13px;}
+    .step-text a{color:var(--diamond);text-decoration:none;border-bottom:1px dashed rgba(103,232,249,0.4);}
+    .step-text a:hover{color:#fff;}
 
+    /* VIDEO */
+    .video-wrap{position:relative;padding-top:56.25%;background:var(--stone);border:1px solid var(--border);border-top:3px solid var(--lava);overflow:hidden;}
+    .video-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
+    .video-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--text-faint);}
+    .video-placeholder .icon{font-size:48px;animation:float 3s ease-in-out infinite;}
+    .video-placeholder p{font-family:'Press Start 2P',monospace;font-size:8px;letter-spacing:1px;}
 
+    /* INFO GRID */
+    .info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:32px;}
+    .info-card{background:var(--stone);border:1px solid var(--border);padding:24px;text-align:center;transition:border-color 0.2s,transform 0.2s;}
+    .info-card:hover{border-color:var(--emerald);transform:translateY(-4px);}
+    .info-card .icon{font-size:32px;margin-bottom:12px;display:block;}
+    .info-card h4{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--emerald);margin-bottom:8px;letter-spacing:1px;}
+    .info-card p{color:var(--text-dim);font-size:12px;}
 
+    /* CTA */
+    #cta-section{background:var(--stone);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:80px 40px;text-align:center;position:relative;overflow:hidden;}
+    #cta-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(74,222,128,0.05) 0%,transparent 70%);pointer-events:none;}
+    #cta-section p{color:var(--text-dim);margin-bottom:36px;max-width:500px;margin-left:auto;margin-right:auto;}
 
-							
-						<!-- First Section -->
-							<section id="first" class="main special">
-									<!-- Introduction -->
-							<section id="intro" class="main">
-								<div class="spotlight">
-									<div class="content">
-										<header class="major">
-											<h2>Modları Doğru Yere Kurmak</h2>
-										</header>
-										<p>Neoforge'u kurmak basit o yüzden anlatmıyorum<br>
-										Ama modları doğru yere kurmanız gerekiyor.<br>
-										Neoforge kurulduktan sonra Minecraft Launcher'i açın, Installations kısmında Neoforge olacak, dosya semboline tıklayın<br><br>
-										<span style="font-size: 1.2em;">Dosyaların içinde Mods Klasörü olacak, yoksa siz ekleyin. Modları buraya atın.</span></p>
-										<ul class="actions">
-											
-										</ul>
-									</div>
-									
-								</div>
-							</section>
-							
+    /* FOOTER */
+    footer{background:var(--stone);border-top:1px solid var(--border);padding:40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;}
+    .footer-brand{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--emerald);}
+    .footer-brand span{color:var(--lava);}
+    .footer-links{display:flex;gap:24px;list-style:none;}
+    .footer-links a{color:var(--text-faint);text-decoration:none;font-size:12px;transition:color 0.2s;}
+    .footer-links a:hover{color:var(--emerald);}
+    .footer-copy{color:var(--text-faint);font-size:11px;}
 
-								
+    /* BADGES & NOTICE */
+    .badge{display:inline-block;background:var(--stone2);border:1px solid var(--border);color:var(--text-dim);font-size:11px;padding:4px 10px;margin:4px 2px;}
+    .badge.green{border-color:var(--emerald-d);color:var(--emerald);}
+    .badge.lava{border-color:#7c2d12;color:var(--lava);}
+    .notice{border:1px solid var(--emerald-d);border-left:3px solid var(--emerald);background:rgba(74,222,128,0.04);padding:16px 20px;margin-top:24px;font-size:13px;color:var(--text-dim);}
+    .notice strong{color:var(--emerald);}
 
+    /* REVEAL */
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity 0.6s ease,transform 0.6s ease;}
+    .reveal.visible{opacity:1;transform:translateY(0);}
 
-						<!-- Second Section -->
-							<section id="second" class="main special">
-								<header class="major">
-									<h2>Neoforge Kurulum Videosu</h2>
-									<p>Donec imperdiet consequat consequat. Suspendisse feugiat congue<br />
-									posuere. Nulla massa urna, fermentum eget quam aliquet.</p>
-								</header>
-								
-								</footer>
-							</section>
+    /* RESPONSIVE */
+    @media(max-width:768px){
+      .two-col,.two-col.reverse{grid-template-columns:1fr;direction:ltr;}
+      #nav{padding:0 20px;}
+      .nav-links{gap:16px;}
+      .nav-links a{font-size:6px;}
+      section{padding:60px 24px;}
+      .info-grid{grid-template-columns:1fr;}
+      .depth-bar{font-size:9px;padding:10px 20px;flex-wrap:wrap;gap:8px;}
+    }
+  </style>
+</head>
+<body>
 
-						<!-- Get Started -->
-							<section id="cta" class="main special">
-								<header class="major">
-									<h2>Congue imperdiet</h2>
-									<p>Donec imperdiet consequat consequat. Suspendisse feugiat congue<br />
-									posuere. Nulla massa urna, fermentum eget quam aliquet.</p>
-								</header>
-								<footer class="major">
-									<ul class="actions special">
-										<li><a href="generic.html" class="button primary">Get Started</a></li>
-										<li><a href="generic.html" class="button">Learn More</a></li>
-									</ul>
-								</footer>
-							</section>
+  <nav id="nav">
+    <div class="nav-brand">LC<span>MP</span></div>
+    <ul class="nav-links">
+      <li><a href="#intro">Başlangıç</a></li>
+      <li><a href="#kurulum">Kurulum</a></li>
+      <li><a href="#video">Video</a></li>
+      <li><a href="portal.html" class="btn btn-primary nav-btn">Portal →</a></li>
+    </ul>
+  </nav>
 
-					</div>
+  <div id="hero">
+    <p class="hero-tag">// sunucu_v1.21.1 — neoforge — private</p>
+    <pre class="ascii-art">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣤⣴⣾⠿⢷⣶⣤⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣠⣤⣶⡿⠿⠛⠉⠁⠀⠀⠀⠀⠉⠛⠻⢿⣶⣤⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⢀⣠⣤⣴⣾⠿⠟⠋⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠻⠿⣶⣦⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⣠⣤⣶⡿⠟⠛⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠙⠻⠿⣶⣦⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⣿⡿⣶⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠙⠻⣿⣶⣦⠀⠀⠀⠀⠀⠀
+⣿⡇⠀⠈⠙⠻⢶⣦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣤⣴⠾⠟⠛⢹⣿⠀⠀⠀⠀⠀⠀
+⣿⡇⠀⠀⠀⠀⠀⠈⠙⠛⠷⣦⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣠⣴⡶⠿⠛⠋⠁⠀⠀⠀⠀⢸⣿⠀⠀⠀⠀⠀⠀
+⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠿⣶⣤⣀⠀⠀⠀⠀⠀⠀⢀⣀⣤⣴⠾⠟⠛⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⠀⠀⠀⠀⠀⠀
+⣿⡇⢀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠻⢶⣤⣤⡶⠿⠛⠋⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⠀⠀⠀⠀⠀⠀
+⣿⡇⠘⢿⣿⣷⣦⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⠀⠀⠀⠀⠀⠀
+⣿⡇⠀⠀⠉⠛⠻⠟⠛⠁⠀⣤⣄⣀⠀⠀⠀⠀⠀⠀⢸⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⠀⠀⠀⠀⠀⠀
+⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠻⣿⣿⣶⣤⣄⡀⠀⢸⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⠀⠀⠀⠀⠀⠀
+⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠿⠟⠻⠃⢸⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡿⠀⠀⠀⠀⠀⠀
+⣿⡇⠀⠀⠀⠀⠀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣽⡇⠀⠀⠀⠀⠀⠀
+⣿⡇⠀⠀⠀⠀⠀⠙⠿⢷⣶⣤⡀⠀⠀⠀⠀⠀⠀⠀⢸⣟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡇⠀⠀⠀⠀⠀⠀
+⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠁⠀⠀⠀⠀⠀⠀⠀⢸⡗⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡇⠀⠀⠀⠀⠀⠀
+⠙⠻⣷⣦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡇⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠉⠛⠿⣷⣦⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣴⣾⠿⠟⠃⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠉⠛⠿⣶⣤⣀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣤⣴⣾⠿⠛⠋⠹⣷⡀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⣿⢿⣶⣤⣀⠀⠀⠀⢸⡇⠀⠀⠀⠀⢀⣠⣤⣶⣾⣿⣿⠉⢿⡜⢧⡀⠀⠀⠘⢿⣆⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢿⡆⣿⠙⠻⢿⣶⣤⣸⣇⣠⣤⣶⡿⣿⠛⠉⢻⣆⢻⣿⣧⠈⢿⣎⢳⡄⠀⠀⠀⠻⣧⡀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣷⠸⣇⠀⠀⠸⣿⠻⠟⢻⡏⠘⣿⡘⣧⠀⠀⢻⣆⣻⣞⣧⠀⢻⣦⠹⣆⠀⠀⠀⠘⢿⣄⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢿⡇⢻⡄⠀⠀⢿⡆⠀⠈⣿⡄⠘⣷⡹⣆⠀⠀⢻⣯⣿⣾⣧⠀⠻⣧⠘⢧⡀⠀⠀⠀⠻⣦⡀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⠘⣧⠀⠀⠘⣿⡀⠀⠹⣧⠀⠹⣧⠹⣆⠀⠀⢻⣿⣿⡟⣧⠀⠹⣷⡈⢷⡄⠀⠀⠀⠙⢷⣄⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⡇⢹⡆⠀⠀⢻⣇⠀⠀⢻⣇⠀⢻⣇⢹⡆⠀⠀⢻⣿⣿⡜⣧⠀⣹⣷⡀⠻⣆⠀⠀⠀⠈⠻⣦
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⡀⣿⠀⣠⣼⠟⠀⠀⠈⣿⡄⠀⢿⣆⢻⡄⠀⠀⢻⣯⠛⠻⠟⠋⠙⣿⡄⠙⣦⠀⠀⠀⢀⣽
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠛⠿⠿⠋⠁⠀⠀⠀⠀⠹⣷⠀⠈⢿⡄⢻⡄⠀⠀⢻⣧⠀⠀⠀⠀⠈⢿⣄⠈⢷⣀⣴⠟⠁
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⣇⠀⠘⣿⡀⢿⡄⠀⠀⢻⣧⠀⠀⠀⠀⠈⠛⠛⠛⠛⠉⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢿⣦⣀⣸⣷⡈⢷⡀⠀⠀⢻⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠛⠉⠹⣧⠈⢷⡀⢀⣴⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡛⠿⢾⣷⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀</pre>
+    <h1 class="hero-title">LOW CORTISOL<br/><span>MINECRAFT MP</span></h1>
+    <p class="hero-sub">Modlu sunucu kurulum rehberi &nbsp;·&nbsp; <a href="https://steamcommunity.com/id/restinpeacearthurmorgan/" target="_blank">Low Cortisol Gaming</a> tarafından</p>
+    <p class="cursor-line">sunucuya_bağlan&nbsp;</p>
+    <div class="hero-btns">
+      <a href="#intro" class="btn btn-primary">⛏ Başla</a>
+      <a href="portal.html" class="btn btn-secondary">🔐 Portal</a>
+    </div>
+  </div>
 
-					
+  <div class="depth-bar">
+    <span>▼</span> DERİNLİK: Y=64 &nbsp;|&nbsp; ORTAM: YÜZEY &nbsp;|&nbsp; <span>NeoForge 1.21.1</span> &nbsp;|&nbsp; DURUM: <span>ÇEVRIMIÇI</span>
+  </div>
 
+  <section id="intro">
+    <div class="two-col">
+      <div class="reveal">
+        <p class="section-label">01 — Gereksinimler</p>
+        <h2 class="section-title">Sunucuya girmek için <em>gerekenler</em></h2>
+        <p style="color:var(--text-dim);margin-bottom:20px;">
+          Sunucumuz <strong style="color:var(--text)">NeoForge</strong> mod yükleyicisi üzerinde çalışmaktadır.
+          Aşağıdaki adımları takip ederek birkaç dakika içinde hazır olabilirsin.
+        </p>
+        <div style="margin-bottom:20px;">
+          <span class="badge green">Minecraft 1.21.1</span>
+          <span class="badge green">NeoForge</span>
+          <span class="badge lava">Java 21+</span>
+          <span class="badge">Min 4GB RAM</span>
+        </div>
+        <a href="generic.html" class="btn btn-primary">⬇ Modları İndir</a>
+        <div class="notice">
+          <strong>Not:</strong> Mod listesini görmek için indirme sayfasını ziyaret et. Tüm modları tek seferde indirebilirsin.
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="t-dot red"></div><div class="t-dot yel"></div><div class="t-dot grn"></div>
+            <span style="margin-left:8px;">minecraft_launcher.exe</span>
+          </div>
+          <div class="terminal-body">
+            <div class="t-line"><span class="t-prompt">C:\mc&gt;</span> <span class="t-cmd">check --version</span></div>
+            <div class="t-line"><span class="t-out">Minecraft: 1.21.1 ✓</span></div>
+            <div class="t-line"><span class="t-out">Java: 21.0.2 ✓</span></div>
+            <div class="t-line" style="margin-top:10px;"><span class="t-prompt">C:\mc&gt;</span> <span class="t-cmd">neoforge --install</span></div>
+            <div class="t-line"><span class="t-ok">NeoForge kuruldu ✓</span></div>
+            <div class="t-line" style="margin-top:10px;"><span class="t-prompt">C:\mc&gt;</span> <span class="t-cmd">mods --copy ./downloads</span></div>
+            <div class="t-line"><span class="t-ok">47 mod kopyalandı ✓</span></div>
+            <div class="t-line" style="margin-top:10px;"><span class="t-prompt">C:\mc&gt;</span> <span class="t-cmd">server --connect lcmp</span></div>
+            <div class="t-line"><span class="t-ok">Bağlantı kuruldu ✓</span></div>
+            <div class="t-line"><span class="t-prompt" style="animation:cursor-blink 1s step-end infinite;">█</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-				<!-- Footer -->
-					<footer id="footer">
-						<section>
-							<h2>Aliquam sed mauris</h2>
-							<p>Sed lorem ipsum dolor sit amet et nullam consequat feugiat consequat magna adipiscing tempus etiam dolore veroeros. eget dapibus mauris. Cras aliquet, nisl ut viverra sollicitudin, ligula erat egestas velit, vitae tincidunt odio.</p>
-							<ul class="actions">
-								<li><a href="generic.html" class="button">Learn More</a></li>
-							</ul>
-						</section>
-						<section>
-							<h2>Etiam feugiat</h2>
-							<dl class="alt">
-							
-							</dl>
-							<ul class="icons">
-								<li><a href="#" class="icon brands fa-twitter alt"><span class="label">Twitter</span></a></li>
-								<li><a href="#" class="icon brands fa-facebook-f alt"><span class="label">Facebook</span></a></li>
-								<li><a href="#" class="icon brands fa-instagram alt"><span class="label">Instagram</span></a></li>
-								<li><a href="#" class="icon brands fa-github alt"><span class="label">GitHub</span></a></li>
-								<li><a href="#" class="icon brands fa-dribbble alt"><span class="label">Dribbble</span></a></li>
-							</ul>
-						</section>
-						
-					</footer>
+    <div class="info-grid reveal" style="margin-top:60px;">
+      <div class="info-card"><span class="icon">⚙️</span><h4>NeoForge</h4><p>Forge'un devam projesi. 1.21.1 için en stabil mod yükleyici.</p></div>
+      <div class="info-card"><span class="icon">📦</span><h4>Mod Paketi</h4><p>Tüm modlar tek zip dosyasında. İndir, yapıştır, oyna.</p></div>
+      <div class="info-card"><span class="icon">🔐</span><h4>Özel Sunucu</h4><p>Sadece onaylı oyuncular bağlanabilir. Portal üzerinden kayıt ol.</p></div>
+    </div>
+  </section>
 
-			</div>
+  <div class="ore-divider"><span class="ore-gem">💎</span></div>
+  <div class="depth-bar"><span>▼</span> DERİNLİK: Y=32 &nbsp;|&nbsp; ORTAM: MAĞARA &nbsp;|&nbsp; ELMASA YAKLAŞILIYOR</div>
 
-		<!-- Scripts -->
-			<script src="assets/js/jquery.min.js"></script>
-			<script src="assets/js/jquery.scrollex.min.js"></script>
-			<script src="assets/js/jquery.scrolly.min.js"></script>
-			<script src="assets/js/browser.min.js"></script>
-			<script src="assets/js/breakpoints.min.js"></script>
-			<script src="assets/js/util.js"></script>
-			<script src="assets/js/main.js"></script>
+  <section id="kurulum">
+    <div class="two-col reverse">
+      <div class="reveal">
+        <p class="section-label">02 — Kurulum</p>
+        <h2 class="section-title">Modları doğru yere <em>kur</em></h2>
+        <p style="color:var(--text-dim);margin-bottom:28px;">NeoForge kurulumu basit olduğu için sadece mod kurulumunu anlatıyorum. Aşağıdaki adımları sırayla takip et.</p>
+        <div class="steps">
+          <div class="step-card">
+            <div class="step-num">01</div>
+            <div class="step-text"><h4>NeoForge'u Kur</h4><p><a href="https://neoforged.net/" target="_blank">neoforged.net</a> adresinden indir ve çalıştır. Java 21 gerekli.</p></div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">02</div>
+            <div class="step-text"><h4>Launcher'ı Aç</h4><p>Minecraft Launcher → <strong style="color:var(--text)">Installations</strong> sekmesi → NeoForge profilini bul.</p></div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">03</div>
+            <div class="step-text"><h4>Mods Klasörünü Bul</h4><p>Profil yanındaki <strong style="color:var(--text)">📁 klasör simgesine</strong> tıkla. <code style="color:var(--emerald)">mods/</code> klasörü yoksa kendin oluştur.</p></div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">04</div>
+            <div class="step-text"><h4>Modları Yapıştır</h4><p>İndirdiğin mod dosyalarını <code style="color:var(--emerald)">mods/</code> klasörüne kopyala. Hazır!</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="t-dot red"></div><div class="t-dot yel"></div><div class="t-dot grn"></div>
+            <span style="margin-left:8px;">dosya_gezgini</span>
+          </div>
+          <div class="terminal-body" style="font-size:12px;">
+            <div class="t-line" style="color:var(--text-faint);">📁 AppData/Roaming/.minecraft/</div>
+            <div class="t-line" style="padding-left:16px;color:var(--text-faint);">📁 versions/</div>
+            <div class="t-line" style="padding-left:16px;color:var(--text-faint);">📁 saves/</div>
+            <div class="t-line" style="padding-left:16px;color:var(--text-faint);">📁 resourcepacks/</div>
+            <div class="t-line" style="padding-left:16px;color:var(--emerald);font-weight:bold;">📁 mods/ &nbsp;&nbsp;&nbsp;← BURAYA AT</div>
+            <div class="t-line" style="padding-left:32px;color:var(--text-dim);">📄 mod_01.jar</div>
+            <div class="t-line" style="padding-left:32px;color:var(--text-dim);">📄 mod_02.jar</div>
+            <div class="t-line" style="padding-left:32px;color:var(--text-dim);">📄 ... (47 dosya)</div>
+            <div class="t-line" style="margin-top:16px;"><span class="t-ok">✓ Tüm modlar yüklendi</span></div>
+            <div class="t-line"><span class="t-ok">✓ Sunucuya bağlanmaya hazır</span></div>
+          </div>
+        </div>
+        <div class="notice" style="margin-top:16px;">
+          <strong>💡 İpucu:</strong> Windows'ta adres çubuğuna <code style="color:var(--emerald)">%appdata%\.minecraft</code> yapıştırabilirsin.
+        </div>
+      </div>
+    </div>
+  </section>
 
-	</body>
+  <div class="ore-divider"><span class="ore-gem">🔥</span></div>
+  <div class="depth-bar"><span>▼</span> DERİNLİK: Y=8 &nbsp;|&nbsp; ORTAM: NETHER YAKINI &nbsp;|&nbsp; DİKKAT: LAVA</div>
+
+  <section id="video">
+    <div style="max-width:700px;margin:0 auto;text-align:center;" class="reveal">
+      <p class="section-label" style="justify-content:center;">03 — Görsel Rehber</p>
+      <h2 class="section-title">NeoForge <em>Kurulum Videosu</em></h2>
+      <p style="color:var(--text-dim);margin-bottom:32px;">Yazılı talimatlar yetmezse aşağıdaki videoyu izleyebilirsin.</p>
+      <div class="video-wrap">
+        <div class="video-placeholder">
+          <span class="icon">▶</span>
+          <p>Video Yakında Eklenecek</p>
+          <p style="margin-top:6px;color:var(--text-faint);font-family:'Share Tech Mono',monospace;font-size:11px;">YouTube linki buraya gelecek</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="cta-section">
+    <div class="reveal">
+      <p class="section-label" style="justify-content:center;">04 — Erişim</p>
+      <h2 class="section-title" style="margin-bottom:12px;">Hazır mısın? <em>Sunucuya katıl.</em></h2>
+      <p>Modları kurduktan sonra portala giderek erişim talebinde bulun.<br/>Admin onayladıktan sonra bağlanabilirsin.</p>
+      <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+        <a href="portal.html" class="btn btn-primary">🔐 Portala Git</a>
+        <a href="generic.html" class="btn btn-secondary">⬇ Modları İndir</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-brand">LOW CORTISOL <span>MP</span></div>
+    <ul class="footer-links">
+      <li><a href="https://steamcommunity.com/id/restinpeacearthurmorgan/" target="_blank">Steam</a></li>
+      <li><a href="portal.html">Portal</a></li>
+      <li><a href="generic.html">Modlar</a></li>
+    </ul>
+    <p class="footer-copy">Low Cortisol Gaming &copy; 2025</p>
+  </footer>
+
+  <script>
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) setTimeout(() => e.target.classList.add('visible'), i * 80);
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(r => observer.observe(r));
+
+    const sections = document.querySelectorAll('section[id],div[id]');
+    const navLinks = document.querySelectorAll('.nav-links a');
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(s => { if (window.scrollY >= s.offsetTop - 80) current = s.id; });
+      navLinks.forEach(a => {
+        if (!a.classList.contains('btn'))
+          a.style.color = a.getAttribute('href') === '#'+current ? 'var(--emerald)' : '';
+      });
+    });
+  </script>
+</body>
 </html>
