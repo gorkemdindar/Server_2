@@ -626,6 +626,25 @@
 
   (async () => {
     const hash = window.location.hash;
+
+    // Handle password recovery token
+    if (hash && (hash.includes('type=recovery') || hash.includes('type=magiclink'))) {
+      const params = new URLSearchParams(hash.replace('#', ''));
+      const accessToken = params.get('access_token');
+      const refreshToken = params.get('refresh_token');
+      if (accessToken) {
+        const { data, error } = await sb.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken || ''
+        });
+        if (!error && data.session) {
+          history.replaceState(null, '', window.location.pathname);
+          showScreen('reset');
+          return;
+        }
+      }
+    }
+
     if (hash && hash.includes('type=signup')) {
       const params = new URLSearchParams(hash.replace('#', ''));
       const tokenHash = params.get('token_hash') || hash.replace('#', '').split('&')[0];
