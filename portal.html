@@ -340,6 +340,9 @@
         <input type="password" id="login-password" placeholder="••••••••" />
       </div>
       <button class="btn btn-start" id="btn-login" onclick="doLogin()">▶ Giriş Yap</button>
+      <div style="text-align:center;margin-top:12px;">
+        <span style="font-size:13px;color:var(--text-dim);cursor:pointer;text-decoration:underline;" onclick="showScreen('forgot')">Şifremi unuttum</span>
+      </div>
     </div>
     <div id="form-signup" style="display:none">
       <div class="form-group">
@@ -368,6 +371,39 @@
       <p class="confirm-note">Göremiyorsan spam klasörüne bak.</p>
     </div>
     <span class="logout-link" onclick="showScreen('auth'); switchTab('login')">← Giriş ekranına dön</span>
+  </div>
+
+  <div class="screen" id="screen-forgot">
+    <div class="confirm-box">
+      <span class="confirm-icon">🔑</span>
+      <h2>Şifre<br>Sıfırla</h2>
+      <p>E-posta adresini gir, sıfırlama bağlantısı gönderelim.</p>
+    </div>
+    <div class="alert" id="forgot-alert"></div>
+    <div class="form-group">
+      <label>E-posta</label>
+      <input type="email" id="forgot-email" placeholder="sen@ornek.com" />
+    </div>
+    <button class="btn btn-start" id="btn-forgot" onclick="doForgot()">📬 Bağlantı Gönder</button>
+    <span class="logout-link" onclick="showScreen('auth'); switchTab('login')">← Giriş ekranına dön</span>
+  </div>
+
+  <div class="screen" id="screen-reset">
+    <div class="confirm-box">
+      <span class="confirm-icon">🔒</span>
+      <h2>Yeni<br>Şifre</h2>
+      <p>Yeni şifreni belirle.</p>
+    </div>
+    <div class="alert" id="reset-alert"></div>
+    <div class="form-group">
+      <label>Yeni Şifre</label>
+      <input type="password" id="reset-password" placeholder="(Min 8 karakter)" />
+    </div>
+    <div class="form-group">
+      <label>Şifre Tekrar</label>
+      <input type="password" id="reset-password2" placeholder="Aynı şifreyi tekrar gir" />
+    </div>
+    <button class="btn btn-start" id="btn-reset" onclick="doReset()">🔒 Şifremi Güncelle</button>
   </div>
 
   <div class="screen" id="screen-pending">
@@ -538,6 +574,49 @@
 
     document.getElementById('confirm-email-display').textContent = email;
     showScreen('confirm');
+  }
+
+  async function doForgot() {
+    const email = document.getElementById('forgot-email').value.trim();
+    if (!email) return showForgotAlert('E-posta adresi girin.', 'error');
+    const btn = document.getElementById('btn-forgot');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>GÖNDERİLİYOR...';
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://lowcortisolgaming.com/portal.html'
+    });
+    btn.disabled = false;
+    btn.innerHTML = '📬 Bağlantı Gönder';
+    if (error) return showForgotAlert(error.message, 'error');
+    showForgotAlert('✓ Bağlantı gönderildi! E-postanı kontrol et.', 'success');
+  }
+
+  async function doReset() {
+    const pass = document.getElementById('reset-password').value;
+    const pass2 = document.getElementById('reset-password2').value;
+    if (pass.length < 8) return showResetAlert('Şifre en az 8 karakter olmalı.', 'error');
+    if (pass !== pass2) return showResetAlert('Şifreler eşleşmiyor.', 'error');
+    const btn = document.getElementById('btn-reset');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>GÜNCELLENİYOR...';
+    const { error } = await sb.auth.updateUser({ password: pass });
+    btn.disabled = false;
+    btn.innerHTML = '🔒 Şifremi Güncelle';
+    if (error) return showResetAlert(error.message, 'error');
+    showResetAlert('✓ Şifren güncellendi! Giriş yapabilirsin.', 'success');
+    setTimeout(() => { showScreen('auth'); switchTab('login'); }, 2000);
+  }
+
+  function showForgotAlert(msg, type) {
+    const el = document.getElementById('forgot-alert');
+    el.textContent = msg;
+    el.className = `alert show alert-${type}`;
+  }
+
+  function showResetAlert(msg, type) {
+    const el = document.getElementById('reset-alert');
+    el.textContent = msg;
+    el.className = `alert show alert-${type}`;
   }
 
   async function doLogout() {
