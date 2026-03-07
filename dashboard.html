@@ -65,7 +65,7 @@
     .topbar-user{font-size:12px;color:var(--text-dim);}
     .topbar-user strong{color:var(--emerald);}
     .admin-badge{font-family:'Press Start 2P',monospace;font-size:7px;background:var(--lava-d);color:var(--lava);border:1px solid var(--lava);padding:3px 8px;animation:lava-pulse 3s infinite;}
-    .topbar-logout{font-size:11px;color:var(--text-faint);cursor:pointer;text-decoration:underline;transition:color 0.2s;}
+    .topbar-logout{font-size:11px;color:var(--text-dim);cursor:pointer;text-decoration:underline;transition:color 0.2s;}
     .topbar-logout:hover{color:var(--red);}
 
     /* ── LAYOUT ── */
@@ -228,8 +228,9 @@
     .chat-send:hover{background:#9a3412;}
 
     /* ── REPORT BUTTON ── */
-    .report-btn{font-size:11px;color:var(--text-faint);cursor:pointer;background:var(--stone2);border:1px solid var(--border);padding:4px 10px;transition:all 0.15s;font-family:'Share Tech Mono',monospace;}
-    .report-btn:hover{color:var(--red);border-color:var(--red-d);}
+    .report-btn{font-size:11px;color:var(--red);cursor:pointer;background:rgba(248,113,113,0.08);border:1px solid var(--red-d);padding:4px 10px;transition:all 0.15s;font-family:'Share Tech Mono',monospace;box-shadow:0 0 8px rgba(248,113,113,0.3);animation:red-pulse 2s ease-in-out infinite;}
+    .report-btn:hover{background:var(--red-d);border-color:var(--red);box-shadow:0 0 16px rgba(248,113,113,0.5);}
+    @keyframes red-pulse{0%,100%{box-shadow:0 0 6px rgba(248,113,113,0.3);}50%{box-shadow:0 0 14px rgba(248,113,113,0.6);}}
 
     /* ── REPORT MODAL ── */
     #report-modal{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:600;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
@@ -637,13 +638,17 @@
   // ── SETTINGS (server status, IP, broadcast) ──
   async function getSetting(key) {
     try {
-      const { data } = await sb.from(TABLE_SETTINGS).select('value').eq('key', key).maybeSingle();
-      return data?.value || null;
-    } catch { return null; }
+      const { data, error } = await sb.from(TABLE_SETTINGS).select('value').eq('key', key).maybeSingle();
+      if (error) { console.error('getSetting error:', key, error); return null; }
+      if (!data) return null;
+      return data.value ?? null;
+    } catch(e) { console.error('getSetting exception:', key, e); return null; }
   }
 
   async function setSetting(key, value) {
-    await sb.from(TABLE_SETTINGS).upsert({ key, value }, { onConflict: 'key' });
+    const { error } = await sb.from(TABLE_SETTINGS).upsert({ key, value }, { onConflict: 'key' });
+    if (error) console.error('setSetting error:', key, error);
+    return !error;
   }
 
   async function loadSettings() {
@@ -919,6 +924,8 @@
     const empty = document.getElementById('chat-empty');
     if (msgs.length === 0) {
       empty.style.display = 'block';
+      container.innerHTML = '';
+      container.appendChild(empty);
       return;
     }
     empty.style.display = 'none';
@@ -927,21 +934,25 @@
         <div class="chat-msg-meta">${m.time}</div>
         <div class="chat-msg-text">${m.text}</div>
       </div>
-    `).join('');
+    `).join('') + '<div class="chat-empty" id="chat-empty" style="display:none"></div>';
     container.scrollTop = container.scrollHeight;
   }
 
   async function sendChatMsg() {
-    const text = document.getElementById('chat-msg-input').value.trim();
+    const input = document.getElementById('chat-msg-input');
+    const text = input.value.trim();
     if (!text) return;
+    const sendBtn = document.querySelector('.chat-send');
+    sendBtn.textContent = '...'; sendBtn.disabled = true;
     const raw = await getSetting('announcements') || '[]';
     let msgs = [];
     try { msgs = JSON.parse(raw); } catch { msgs = []; }
     msgs.push({ text, time: new Date().toLocaleString('tr-TR') });
-    if (msgs.length > 20) msgs = msgs.slice(-20); // keep last 20
-    await setSetting('announcements', JSON.stringify(msgs));
-    document.getElementById('chat-msg-input').value = '';
-    await loadChatMessages();
+    if (msgs.length > 20) msgs = msgs.slice(-20);
+    const ok = await setSetting('announcements', JSON.stringify(msgs));
+    sendBtn.textContent = '📢 Gönder'; sendBtn.disabled = false;
+    if (ok) { input.value = ''; await loadChatMessages(); }
+    else { sendBtn.textContent = '❌ Hata'; setTimeout(() => { sendBtn.textContent = '📢 Gönder'; }, 2000); }
   }
 
   // ── REPORT ──
@@ -965,9 +976,9 @@
 
   async function sendReport() {
     const text = document.getElementById('report-text').value.trim();
-    const alert = document.getElementById('report-alert');
-    if (!selectedTopic) { alert.textContent = 'Konu seç!'; alert.className='report-alert show'; return; }
-    if (!text) { alert.textContent = 'Açıklama yaz!'; alert.className='report-alert show'; return; }
+    const alertEl = document.getElementById('report-alert');
+    if (!selectedTopic) { alertEl.textContent = 'Konu seç!'; alertEl.className='report-alert show'; return; }
+    if (!text) { alertEl.textContent = 'Açıklama yaz!'; alertEl.className='report-alert show'; return; }
     const btn = document.getElementById('btn-report-send');
     btn.disabled = true; btn.textContent = '...';
     const raw = await getSetting('reports') || '[]';
@@ -980,11 +991,18 @@
       text,
       time: new Date().toLocaleString('tr-TR')
     });
-    await setSetting('reports', JSON.stringify(reports));
+    const ok = await setSetting('reports', JSON.stringify(reports));
     btn.disabled = false; btn.textContent = 'Gönder →';
-    alert.textContent = '✓ Gönderildi!';
-    alert.style.display = 'block';
-    setTimeout(() => closeReport(), 1500);
+    if (ok) {
+      alertEl.textContent = '✓ Gönderildi!';
+      alertEl.style.color = 'var(--emerald)';
+      alertEl.className = 'report-alert show';
+      setTimeout(() => closeReport(), 1500);
+    } else {
+      alertEl.textContent = '❌ Hata oluştu, tekrar dene.';
+      alertEl.style.color = 'var(--red)';
+      alertEl.className = 'report-alert show';
+    }
   }
 
   // ── START ──
