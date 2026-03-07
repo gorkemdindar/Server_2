@@ -203,6 +203,51 @@
     .request-banner p{font-size:13px;color:var(--text-dim);}
     .request-banner strong{color:var(--emerald);}
 
+
+    /* ── CHATBOX (announcement panel) ── */
+    #chatbox{position:fixed;bottom:20px;right:20px;width:300px;z-index:200;font-family:'Share Tech Mono',monospace;}
+    .chat-toggle{width:100%;background:var(--stone2);border:1px solid var(--border);border-top:2px solid var(--lava);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background 0.15s;}
+    .chat-toggle:hover{background:var(--stone3);}
+    .chat-toggle-title{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--lava);}
+    .chat-toggle-icon{color:var(--text-faint);font-size:12px;transition:transform 0.2s;}
+    .chat-toggle-icon.open{transform:rotate(180deg);}
+    .chat-body{background:var(--stone);border:1px solid var(--border);border-top:none;display:none;flex-direction:column;max-height:320px;}
+    .chat-body.open{display:flex;}
+    .chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:120px;}
+    .chat-messages::-webkit-scrollbar{width:3px;}
+    .chat-messages::-webkit-scrollbar-thumb{background:var(--emerald-d);}
+    .chat-msg{background:var(--stone2);border:1px solid var(--border);border-left:2px solid var(--lava);padding:8px 10px;font-size:12px;color:var(--text);}
+    .chat-msg-meta{font-size:10px;color:var(--text-faint);margin-bottom:3px;}
+    .chat-msg-text{color:var(--lava);font-size:12px;}
+    .chat-empty{color:var(--text-faint);font-size:11px;text-align:center;padding:20px;font-family:'Press Start 2P',monospace;}
+    .chat-input-wrap{border-top:1px solid var(--border);padding:10px;display:none;gap:6px;flex-direction:column;}
+    .chat-input-wrap.admin-visible{display:flex;}
+    .chat-input{width:100%;background:var(--stone2);border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:13px;padding:8px 10px;outline:none;resize:none;min-height:56px;}
+    .chat-input:focus{border-color:var(--lava-d);}
+    .chat-send{background:var(--lava-d);color:var(--lava);border:1px solid var(--lava);font-family:'Press Start 2P',monospace;font-size:7px;padding:7px 12px;cursor:pointer;transition:background 0.15s;align-self:flex-end;}
+    .chat-send:hover{background:#9a3412;}
+
+    /* ── REPORT BUTTON ── */
+    .report-btn{font-size:11px;color:var(--text-faint);cursor:pointer;background:var(--stone2);border:1px solid var(--border);padding:4px 10px;transition:all 0.15s;font-family:'Share Tech Mono',monospace;}
+    .report-btn:hover{color:var(--red);border-color:var(--red-d);}
+
+    /* ── REPORT MODAL ── */
+    #report-modal{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:600;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+    #report-modal.open{display:flex;}
+    .report-card{background:var(--stone2);border:2px solid var(--border);border-top:3px solid var(--red);width:100%;max-width:420px;padding:28px;animation:fadein 0.2s ease both;}
+    .report-title{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--red);margin-bottom:6px;}
+    .report-sub{color:var(--text-faint);font-size:12px;margin-bottom:20px;}
+    .report-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-faint);letter-spacing:1px;margin-bottom:8px;display:block;}
+    .report-topics{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+    .report-topic{background:var(--stone);border:2px solid var(--border);color:var(--text-dim);font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;cursor:pointer;transition:all 0.15s;}
+    .report-topic:hover{border-color:var(--red-d);color:var(--text);}
+    .report-topic.selected{background:var(--red-d);border-color:var(--red);color:var(--red);}
+    .report-textarea{width:100%;background:var(--stone);border:2px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:13px;padding:10px 12px;outline:none;resize:vertical;min-height:100px;margin-bottom:16px;transition:border-color 0.2s;}
+    .report-textarea:focus{border-color:var(--red-d);}
+    .report-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;}
+    .report-alert{font-size:12px;color:var(--emerald);display:none;}
+    .report-alert.show{display:block;}
+
     /* RESPONSIVE */
     @media(max-width:768px){
       .layout{grid-template-columns:1fr;}
@@ -234,6 +279,7 @@
     <div class="topbar-brand">LC<span>MP</span> // DASHBOARD</div>
     <div class="topbar-right">
       <span class="topbar-user">Hoşgeldin, <strong id="topbar-name">—</strong></span>
+      <button class="report-btn" onclick="openReport()">⚠ Sorun Bildir</button>
       <span class="admin-badge" id="admin-badge" style="display:none;">⚡ ADMIN</span>
       <span class="topbar-logout" onclick="doLogout()">Çıkış →</span>
     </div>
@@ -264,6 +310,10 @@
         </a>
         <a class="nav-item" onclick="showPage('broadcast')" href="#">
           <span class="icon">📢</span> Duyuru
+        </a>
+        <a class="nav-item" onclick="showPage('reports')" href="#">
+          <span class="icon">⚠</span> Sorunlar
+          <span id="reports-badge" style="margin-left:auto;background:var(--red);color:#fff;font-family:'Press Start 2P',monospace;font-size:7px;padding:2px 6px;display:none;"></span>
         </a>
       </div>
       <div class="nav-divider"></div>
@@ -494,6 +544,35 @@
         </div>
       </div>
 
+
+      <!-- ── PAGE: REPORTS (admin only) ── -->
+      <div class="page" id="page-reports">
+        <div class="page-header">
+          <h1>Sorun <em>Bildirimleri</em></h1>
+          <p>Kullanıcıların bildirdiği sorunlar</p>
+        </div>
+        <div class="alert" id="reports-alert"></div>
+        <div class="table-card">
+          <div class="table-header">
+            <span class="table-title">SORUN LİSTESİ</span>
+            <button class="btn btn-ghost btn-sm" onclick="clearReports()">✕ Tümünü Temizle</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>KULLANICI</th>
+                <th>KONU</th>
+                <th>AÇIKLAMA</th>
+                <th>TARİH</th>
+              </tr>
+            </thead>
+            <tbody id="reports-tbody">
+              <tr class="empty-row"><td colspan="4">Yükleniyor...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div><!-- /main -->
   </div><!-- /layout -->
 </div><!-- /app -->
@@ -536,6 +615,11 @@
       document.getElementById('start-request-banner').style.display = 'none';
     }
 
+    // Show admin chat input
+    if (isAdmin) {
+      document.getElementById('chat-input-wrap').classList.add('admin-visible');
+    }
+
     // Hide gate, show app
     document.getElementById('gate').style.display = 'none';
     document.getElementById('app').style.display  = 'block';
@@ -546,6 +630,7 @@
     if (isAdmin) {
       await loadUsers();
       await loadPending();
+      await loadReports();
     }
   }
 
@@ -757,6 +842,38 @@
     document.getElementById('announcement-banner').classList.remove('show');
   }
 
+
+  // ── REPORTS (admin) ──
+  async function loadReports() {
+    const raw = await getSetting('reports') || '[]';
+    let reports = [];
+    try { reports = JSON.parse(raw); } catch { reports = []; }
+    const tbody = document.getElementById('reports-tbody');
+    const badge = document.getElementById('reports-badge');
+    if (!tbody) return;
+    if (reports.length === 0) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Bildirim yok 🎉</td></tr>';
+      if (badge) badge.style.display = 'none';
+      return;
+    }
+    if (badge) { badge.textContent = reports.length; badge.style.display = 'inline-block'; }
+    tbody.innerHTML = reports.map(r => `
+      <tr>
+        <td class="td-main">⛏ ${r.user || '—'}<br><span style="font-size:10px;color:var(--text-faint)">${r.email||''}</span></td>
+        <td><span class="tag tag-red">${r.topic}</span></td>
+        <td style="max-width:220px;white-space:pre-wrap;">${r.text}</td>
+        <td>${r.time}</td>
+      </tr>
+    `).join('');
+  }
+
+  async function clearReports() {
+    if (!confirm('Tüm bildirimler silinecek. Emin misin?')) return;
+    await setSetting('reports', '[]');
+    showAlert('reports-alert', '✓ Tüm bildirimler temizlendi.', 'green');
+    await loadReports();
+  }
+
   // ── NAVIGATION ──
   function showPage(name) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -780,8 +897,139 @@
     window.location.href = 'portal.html';
   }
 
+
+  // ── CHATBOX ──
+  let chatOpen = false;
+  let selectedTopic = '';
+
+  function toggleChat() {
+    chatOpen = !chatOpen;
+    document.getElementById('chat-body').classList.toggle('open', chatOpen);
+    const icon = document.getElementById('chat-icon');
+    icon.textContent = chatOpen ? '▼' : '▲';
+    icon.classList.toggle('open', chatOpen);
+    if (chatOpen) loadChatMessages();
+  }
+
+  async function loadChatMessages() {
+    const raw = await getSetting('announcements') || '[]';
+    let msgs = [];
+    try { msgs = JSON.parse(raw); } catch { msgs = []; }
+    const container = document.getElementById('chat-messages');
+    const empty = document.getElementById('chat-empty');
+    if (msgs.length === 0) {
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    container.innerHTML = msgs.map(m => `
+      <div class="chat-msg">
+        <div class="chat-msg-meta">${m.time}</div>
+        <div class="chat-msg-text">${m.text}</div>
+      </div>
+    `).join('');
+    container.scrollTop = container.scrollHeight;
+  }
+
+  async function sendChatMsg() {
+    const text = document.getElementById('chat-msg-input').value.trim();
+    if (!text) return;
+    const raw = await getSetting('announcements') || '[]';
+    let msgs = [];
+    try { msgs = JSON.parse(raw); } catch { msgs = []; }
+    msgs.push({ text, time: new Date().toLocaleString('tr-TR') });
+    if (msgs.length > 20) msgs = msgs.slice(-20); // keep last 20
+    await setSetting('announcements', JSON.stringify(msgs));
+    document.getElementById('chat-msg-input').value = '';
+    await loadChatMessages();
+  }
+
+  // ── REPORT ──
+  function openReport() {
+    selectedTopic = '';
+    document.getElementById('report-text').value = '';
+    document.getElementById('report-alert').className = 'report-alert';
+    document.querySelectorAll('.report-topic').forEach(t => t.classList.remove('selected'));
+    document.getElementById('report-modal').classList.add('open');
+  }
+
+  function closeReport() {
+    document.getElementById('report-modal').classList.remove('open');
+  }
+
+  function selectTopic(el, topic) {
+    selectedTopic = topic;
+    document.querySelectorAll('.report-topic').forEach(t => t.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  async function sendReport() {
+    const text = document.getElementById('report-text').value.trim();
+    const alert = document.getElementById('report-alert');
+    if (!selectedTopic) { alert.textContent = 'Konu seç!'; alert.className='report-alert show'; return; }
+    if (!text) { alert.textContent = 'Açıklama yaz!'; alert.className='report-alert show'; return; }
+    const btn = document.getElementById('btn-report-send');
+    btn.disabled = true; btn.textContent = '...';
+    const raw = await getSetting('reports') || '[]';
+    let reports = [];
+    try { reports = JSON.parse(raw); } catch { reports = []; }
+    reports.unshift({
+      user: currentUser.username,
+      email: currentUser.email,
+      topic: selectedTopic,
+      text,
+      time: new Date().toLocaleString('tr-TR')
+    });
+    await setSetting('reports', JSON.stringify(reports));
+    btn.disabled = false; btn.textContent = 'Gönder →';
+    alert.textContent = '✓ Gönderildi!';
+    alert.style.display = 'block';
+    setTimeout(() => closeReport(), 1500);
+  }
+
   // ── START ──
   init();
 </script>
+
+<!-- CHATBOX -->
+<div id="chatbox">
+  <div class="chat-toggle" onclick="toggleChat()">
+    <span class="chat-toggle-title">📢 DUYURULAR</span>
+    <span class="chat-toggle-icon" id="chat-icon">▲</span>
+  </div>
+  <div class="chat-body" id="chat-body">
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-empty" id="chat-empty">Henüz duyuru yok</div>
+    </div>
+    <div class="chat-input-wrap" id="chat-input-wrap">
+      <textarea class="chat-input" id="chat-msg-input" placeholder="Duyuru yaz..."></textarea>
+      <button class="chat-send" onclick="sendChatMsg()">📢 Gönder</button>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT MODAL -->
+<div id="report-modal">
+  <div class="report-card">
+    <div class="report-title">⚠ SORUN BİLDİR</div>
+    <p class="report-sub">Admin ile doğrudan iletişime geç</p>
+    <span class="report-label">// KONU SEÇ</span>
+    <div class="report-topics">
+      <div class="report-topic" onclick="selectTopic(this,'Web Sitesi')">🌐 Web Sitesi</div>
+      <div class="report-topic" onclick="selectTopic(this,'Sunucu')">🖥️ Sunucu</div>
+      <div class="report-topic" onclick="selectTopic(this,'Diğer')">📝 Diğer</div>
+    </div>
+    <span class="report-label">// AÇIKLAMA</span>
+    <textarea class="report-textarea" id="report-text" placeholder="Sorunu buraya yaz..."></textarea>
+    <div class="report-footer">
+      <span class="report-alert" id="report-alert"></span>
+      <div style="display:flex;gap:8px;margin-left:auto;">
+        <button class="btn btn-ghost btn-sm" onclick="closeReport()">İptal</button>
+        <button class="btn btn-red btn-sm" id="btn-report-send" onclick="sendReport()">Gönder →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
