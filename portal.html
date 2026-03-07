@@ -624,26 +624,25 @@
     showScreen('auth');
   }
 
-  (async () => {
-    const hash = window.location.hash;
-
-    // Handle password recovery token
-    if (hash && (hash.includes('type=recovery') || hash.includes('type=magiclink'))) {
-      const params = new URLSearchParams(hash.replace('#', ''));
-      const accessToken = params.get('access_token');
-      const refreshToken = params.get('refresh_token');
-      if (accessToken) {
-        const { data, error } = await sb.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken || ''
-        });
-        if (!error && data.session) {
-          history.replaceState(null, '', window.location.pathname);
-          showScreen('reset');
-          return;
-        }
+  // Listen for auth state changes — catches PASSWORD_RECOVERY event reliably
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      history.replaceState(null, '', window.location.pathname);
+      showScreen('reset');
+      return;
+    }
+    if (event === 'SIGNED_IN' && session?.user) {
+      // Only auto-navigate if we're not already on reset screen
+      const resetActive = document.getElementById('screen-reset').classList.contains('active');
+      if (!resetActive) {
+        history.replaceState(null, '', window.location.pathname);
+        await checkUserStatus(session.user);
       }
     }
+  });
+
+  (async () => {
+    const hash = window.location.hash;
 
     if (hash && hash.includes('type=signup')) {
       const params = new URLSearchParams(hash.replace('#', ''));
@@ -661,17 +660,11 @@
       }
     }
 
-    if (hash && hash.includes('access_token')) {
+    // Normal session restore (skip if hash present — onAuthStateChange will handle it)
+    if (!hash || (!hash.includes('access_token') && !hash.includes('type='))) {
       const { data: { session } } = await sb.auth.getSession();
-      if (session?.user) {
-        history.replaceState(null, '', window.location.pathname);
-        await checkUserStatus(session.user);
-        return;
-      }
+      if (session?.user) await checkUserStatus(session.user);
     }
-
-    const { data: { session } } = await sb.auth.getSession();
-    if (session?.user) await checkUserStatus(session.user);
   })();
 </script>
 </body>
