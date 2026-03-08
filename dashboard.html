@@ -451,6 +451,15 @@
               <button class="btn btn-red btn-sm" onclick="setServerStatus('offline')">✕ Çevrimdışı Yap</button>
             </div>
           </div>
+
+          <!-- Admin: clear start requests -->
+          <div id="requests-wrap" style="display:none;margin-top:16px;">
+            <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--text-faint);letter-spacing:1px;">// BAŞLATMA İSTEKLERİ</span>
+            <div style="display:flex;gap:10px;margin-top:10px;align-items:center;">
+              <span id="requests-count" style="font-size:12px;color:var(--text-dim);">yükleniyor...</span>
+              <button class="btn btn-ghost btn-sm" onclick="clearStartRequests()">✕ Temizle</button>
+            </div>
+          </div>
         </div>
 
         <!-- User: start request -->
@@ -625,8 +634,10 @@
       document.getElementById('admin-nav').style.display   = 'block';
       document.getElementById('ip-editor-wrap').style.display    = 'block';
       document.getElementById('status-editor-wrap').style.display = 'block';
+      document.getElementById('requests-wrap').style.display      = 'block';
       document.getElementById('user-start-wrap').style.display   = 'none';
       document.getElementById('start-request-banner').style.display = 'none';
+      await loadStartRequests();
     }
 
     // Show admin chat input
@@ -730,7 +741,10 @@
   }
 
   // ── REQUEST SERVER START (user) ──
+  let startRequestCooldown = false;
+
   async function requestServerStart() {
+    if (startRequestCooldown) return;
     const btns = ['btn-request-start','btn-request-start2'];
     btns.forEach(id => { const b = document.getElementById(id); if(b){b.disabled=true;b.innerHTML='<span class="spinner"></span>Gönderiliyor...';} });
     const { error } = await sb.from(TABLE_REQUESTS).insert({
@@ -739,9 +753,23 @@
       requested_at: new Date().toISOString()
     });
     if (!error) {
+      startRequestCooldown = true;
       btns.forEach(id => { const b = document.getElementById(id); if(b){b.disabled=true;b.textContent='✓ İstek Gönderildi';} });
+      // 5 min cooldown
+      let secs = 300;
+      const timer = setInterval(() => {
+        secs--;
+        btns.forEach(id => { const b = document.getElementById(id); if(b) b.textContent = `⏳ Tekrar gönder (${secs}s)`; });
+        if (secs <= 0) {
+          clearInterval(timer);
+          startRequestCooldown = false;
+          btns.forEach(id => { const b = document.getElementById(id); if(b){b.disabled=false;b.textContent='▶ Başlatılmasını İste';} });
+        }
+      }, 1000);
     } else {
+      // Unique constraint hit = already sent a request
       btns.forEach(id => { const b = document.getElementById(id); if(b){b.disabled=false;b.textContent='▶ Başlatılmasını İste';} });
+      showAlert('server-alert', 'Zaten bir istek gönderdin. Admin işleme alacaktır.', 'yellow');
     }
   }
 
@@ -839,6 +867,25 @@
     await sb.from(TABLE_PENDING).delete().eq('email', email);
     showAlert('pending-alert', `✓ ${username} talebi reddedildi.`, 'red');
     await loadPending();
+  }
+
+  // ── START REQUESTS (admin) ──
+  async function loadStartRequests() {
+    const { data, error } = await sb.from(TABLE_REQUESTS).select('*').order('requested_at', { ascending: false });
+    const countEl = document.getElementById('requests-count');
+    if (!countEl) return;
+    if (!data || data.length === 0) {
+      countEl.textContent = 'Bekleyen istek yok.';
+      return;
+    }
+    countEl.textContent = `${data.length} istek — Son: ${data[0].username} (${new Date(data[0].requested_at).toLocaleString('tr-TR', {timeZone:'Europe/Istanbul'})})`;
+  }
+
+  async function clearStartRequests() {
+    if (!await verifyAdmin()) return;
+    await sb.from(TABLE_REQUESTS).delete().neq('id', 0);
+    await loadStartRequests();
+    showAlert('server-alert', '✓ Tüm başlatma istekleri temizlendi.', 'green');
   }
 
   // ── BROADCAST (admin) ──
@@ -1053,13 +1100,24 @@
       topic: selectedTopic,
       text,
     });
-    btn.disabled = false; btn.textContent = 'Gönder →';
     if (!error) {
       alertEl.textContent = '✓ Gönderildi!';
       alertEl.style.color = 'var(--emerald)';
       alertEl.className = 'report-alert show';
+      // 60s cooldown on report button
+      let secs = 60;
+      const timer = setInterval(() => {
+        secs--;
+        btn.textContent = `⏳ (${secs}s)`;
+        if (secs <= 0) {
+          clearInterval(timer);
+          btn.disabled = false;
+          btn.textContent = 'Gönder →';
+        }
+      }, 1000);
       setTimeout(() => closeReport(), 1500);
     } else {
+      btn.disabled = false; btn.textContent = 'Gönder →';
       alertEl.textContent = '❌ Hata oluştu, tekrar dene.';
       alertEl.style.color = 'var(--red)';
       alertEl.className = 'report-alert show';
