@@ -423,7 +423,7 @@
       <div class="server-status">
         <div class="status-row">
           <span class="status-label">DURUM</span>
-          <span class="status-val"><span class="dot dot-off" id="status-dot"></span><span id="status-text">KAPALI</span></span>
+          <span class="status-val"><span class="dot dot-on" id="status-dot"></span><span id="status-text">AÇIK</span></span>
         </div>
         <div class="status-row">
           <span class="status-label">SUNUCU IP</span>
@@ -431,7 +431,7 @@
         </div>
         <div class="status-row">
           <span class="status-label">SÜRÜM</span>
-          <span class="status-val">1.21.x</span>
+          <span class="status-val">1.21.1</span>
         </div>
       </div>
       <button class="btn btn-start" onclick="window.location.href='dashboard.html'">
@@ -497,7 +497,7 @@
       document.getElementById('welcome-msg').textContent =
         `Hoşgeldin, ${approved.username || user.email}!`;
       document.getElementById('server-ip').textContent =
-        approved.server_ip || 'Admine sor';
+        approved.server_ip || 'join.lowcortisolgaming.com';
       showScreen('dashboard');
       return;
     }
