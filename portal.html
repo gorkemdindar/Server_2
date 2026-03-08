@@ -549,6 +549,10 @@
 
     if (!username || !email || !password)
       return showAlert('Tüm alanları doldurun.');
+    if (username.length > 24)
+      return showAlert('Kullanıcı adı en fazla 24 karakter olabilir.');
+    if (!/^[a-zA-Z0-9_]+$/.test(username))
+      return showAlert('Kullanıcı adı sadece harf, rakam ve _ içerebilir.');
     if (password.length < 8)
       return showAlert('Şifre en az 8 karakter olmalıdır.');
 
@@ -620,8 +624,14 @@
     const { error } = await sb.auth.updateUser({ password: pass });
     btn.disabled = false;
     btn.innerHTML = '🔒 Şifremi Güncelle';
-    if (error) return showResetAlert(error.message, 'error');
+    if (error) {
+      btn.disabled = false;
+      btn.innerHTML = '🔒 Şifremi Güncelle';
+      return showResetAlert(error.message, 'error');
+    }
     showResetAlert('✓ Şifren güncellendi! Giriş yapabilirsin.', 'success');
+    btn.disabled = true;
+    btn.innerHTML = '✓ Güncellendi';
     await sb.auth.signOut();
     setTimeout(() => { showScreen('auth'); switchTab('login'); }, 2000);
   }
