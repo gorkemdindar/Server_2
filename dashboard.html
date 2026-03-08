@@ -588,8 +588,10 @@
   const SUPABASE_ANON = 'sb_publishable_xsEvj7SkmvIvuNky8TWIpg_Gdovm8Ju';
   const TABLE_APPROVED   = 'onay';
   const TABLE_PENDING    = 'bekleyen';
-  const TABLE_SETTINGS   = 'settings';     // key/value table for server status, IP, broadcast
-  const ADMIN_EMAIL      = 'gorkemdr50@gmail.com'; // 🔧 YOUR EMAIL HERE
+  const TABLE_SETTINGS   = 'settings';
+  const TABLE_REPORTS    = 'raporlar';
+  const TABLE_REQUESTS   = 'baslat_istekleri';
+  const ADMIN_EMAIL      = 'gorkemdr50@gmail.com';
 
   const { createClient } = supabase;
   const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -597,6 +599,13 @@
   let currentUser  = null;
   let isAdmin      = false;
   let serverStatus = 'offline';
+
+  // ── SANITIZER ──
+  function sanitize(str) {
+    const div = document.createElement('div');
+    div.textContent = String(str || '');
+    return div.innerHTML;
+  }
 
   // ── INIT ──
   async function init() {
@@ -693,8 +702,16 @@
     // Broadcast banner handled by loadBroadcast()
   }
 
+  // ── ADMIN GUARD ──
+  async function verifyAdmin() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return false;
+    return session.user.email === ADMIN_EMAIL;
+  }
+
   // ── SERVER STATUS (admin) ──
   async function setServerStatus(status) {
+    if (!await verifyAdmin()) return;
     const now = new Date().toLocaleString('tr-TR', {timeZone:'Europe/Istanbul'});
     await setSetting('server_status', status);
     await setSetting('status_updated', now);
@@ -704,6 +721,7 @@
 
   // ── UPDATE IP (admin) ──
   async function updateIP() {
+    if (!await verifyAdmin()) return;
     const val = document.getElementById('ip-input').value.trim();
     if (!val) return showAlert('server-alert', 'IP adresi boş olamaz.', 'red');
     await setSetting('server_ip', val);
@@ -715,8 +733,16 @@
   async function requestServerStart() {
     const btns = ['btn-request-start','btn-request-start2'];
     btns.forEach(id => { const b = document.getElementById(id); if(b){b.disabled=true;b.innerHTML='<span class="spinner"></span>Gönderiliyor...';} });
-    await setSetting('start_request', currentUser.username + ' sunucunun başlatılmasını istedi — ' + new Date().toLocaleString('tr-TR', {timeZone:'Europe/Istanbul'}));
-    btns.forEach(id => { const b = document.getElementById(id); if(b){b.disabled=true;b.textContent='✓ İstek Gönderildi';} });
+    const { error } = await sb.from(TABLE_REQUESTS).insert({
+      username: currentUser.username,
+      email: currentUser.email,
+      requested_at: new Date().toISOString()
+    });
+    if (!error) {
+      btns.forEach(id => { const b = document.getElementById(id); if(b){b.disabled=true;b.textContent='✓ İstek Gönderildi';} });
+    } else {
+      btns.forEach(id => { const b = document.getElementById(id); if(b){b.disabled=false;b.textContent='▶ Başlatılmasını İste';} });
+    }
   }
 
   // ── LOAD APPROVED USERS (admin) ──
@@ -734,16 +760,17 @@
       return;
     }
     count.textContent = data.length + ' kullanıcı';
-    tbody.innerHTML = data.map(u => `
-      <tr>
-        <td class="td-main">⛏ ${u.username || '—'}</td>
-        <td>${u.email}</td>
-        <td>${u.approved_at ? new Date(u.approved_at).toLocaleDateString('tr-TR') : '—'}</td>
-        <td>
-          <button class="btn btn-red btn-sm" onclick="revokeUser('${u.email}', '${u.username}')">✕ Erişimi Kaldır</button>
-        </td>
-      </tr>
-    `).join('');
+    tbody.innerHTML = data.map(u => {
+      const username = sanitize(u.username || '—');
+      const email    = sanitize(u.email);
+      const date     = u.approved_at ? new Date(u.approved_at).toLocaleDateString('tr-TR') : '—';
+      return `<tr>
+        <td class="td-main">⛏ ${username}</td>
+        <td>${email}</td>
+        <td>${date}</td>
+        <td><button class="btn btn-red btn-sm" onclick="revokeUser(${JSON.stringify(u.email)}, ${JSON.stringify(u.username)})">✕ Erişimi Kaldır</button></td>
+      </tr>`;
+    }).join('');
   }
 
   // ── REVOKE USER (admin) ──
@@ -778,17 +805,20 @@
       return;
     }
     count.textContent = data.length + ' talep';
-    tbody.innerHTML = data.map(u => `
-      <tr>
-        <td class="td-main">⛏ ${u.username || '—'}</td>
-        <td>${u.email}</td>
-        <td>${u.requested_at ? new Date(u.requested_at).toLocaleDateString('tr-TR') : '—'}</td>
+    tbody.innerHTML = data.map(u => {
+      const username = sanitize(u.username || '—');
+      const email    = sanitize(u.email);
+      const date     = u.requested_at ? new Date(u.requested_at).toLocaleDateString('tr-TR') : '—';
+      return `<tr>
+        <td class="td-main">⛏ ${username}</td>
+        <td>${email}</td>
+        <td>${date}</td>
         <td style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-green btn-sm" onclick="approveUser('${u.email}', '${u.username}')">✓ Onayla</button>
-          <button class="btn btn-red btn-sm" onclick="rejectUser('${u.email}', '${u.username}')">✕ Reddet</button>
+          <button class="btn btn-green btn-sm" onclick="approveUser(${JSON.stringify(u.email)}, ${JSON.stringify(u.username)})">✓ Onayla</button>
+          <button class="btn btn-red btn-sm" onclick="rejectUser(${JSON.stringify(u.email)}, ${JSON.stringify(u.username)})">✕ Reddet</button>
         </td>
-      </tr>
-    `).join('');
+      </tr>`;
+    }).join('');
   }
 
   // ── APPROVE USER (admin) ──
@@ -827,6 +857,7 @@
   }
 
   async function sendBroadcast() {
+    if (!await verifyAdmin()) return;
     const text = document.getElementById('broadcast-text').value.trim();
     if (!text) return showAlert('broadcast-alert', 'Duyuru metni boş olamaz.', 'red');
     const btn = document.getElementById('btn-broadcast');
@@ -841,6 +872,7 @@
   }
 
   async function clearBroadcast() {
+    if (!await verifyAdmin()) return;
     await setSetting('broadcast', '');
     document.getElementById('current-broadcast-text').textContent = 'Aktif duyuru yok.';
     document.getElementById('announcement-banner').classList.remove('show');
@@ -854,31 +886,36 @@
 
   // ── REPORTS (admin) ──
   async function loadReports() {
-    const raw = await getSetting('reports') || '[]';
-    let reports = [];
-    try { reports = JSON.parse(raw); } catch { reports = []; }
+    const { data: reports, error } = await sb
+      .from(TABLE_REPORTS).select('*').order('created_at', { ascending: false });
     const tbody = document.getElementById('reports-tbody');
     const badge = document.getElementById('reports-badge');
     if (!tbody) return;
-    if (reports.length === 0) {
+    if (!reports || reports.length === 0) {
       tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Bildirim yok 🎉</td></tr>';
       if (badge) badge.style.display = 'none';
       return;
     }
     if (badge) { badge.textContent = reports.length; badge.style.display = 'inline-block'; }
-    tbody.innerHTML = reports.map(r => `
-      <tr>
-        <td class="td-main">⛏ ${r.user || '—'}<br><span style="font-size:10px;color:var(--text-faint)">${r.email||''}</span></td>
-        <td><span class="tag tag-red">${r.topic}</span></td>
-        <td style="max-width:220px;white-space:pre-wrap;">${r.text}</td>
-        <td>${r.time}</td>
-      </tr>
-    `).join('');
+    tbody.innerHTML = reports.map(r => {
+      const user  = sanitize(r.username || '—');
+      const email = sanitize(r.email || '');
+      const topic = sanitize(r.topic);
+      const text  = sanitize(r.text);
+      const time  = r.created_at ? new Date(r.created_at).toLocaleString('tr-TR', {timeZone:'Europe/Istanbul'}) : '—';
+      return `<tr>
+        <td class="td-main">⛏ ${user}<br><span style="font-size:10px;color:var(--text-faint)">${email}</span></td>
+        <td><span class="tag tag-red">${topic}</span></td>
+        <td style="max-width:220px;white-space:pre-wrap;">${text}</td>
+        <td>${time}</td>
+      </tr>`;
+    }).join('');
   }
 
   async function clearReports() {
+    if (!await verifyAdmin()) return;
     if (!confirm('Tüm bildirimler silinecek. Emin misin?')) return;
-    await setSetting('reports', '[]');
+    await sb.from(TABLE_REPORTS).delete().neq('id', 0);
     showAlert('reports-alert', '✓ Tüm bildirimler temizlendi.', 'green');
     await loadReports();
   }
@@ -933,12 +970,14 @@
       return;
     }
     empty.style.display = 'none';
-    container.innerHTML = msgs.map(m => `
-      <div class="chat-msg">
-        <div class="chat-msg-meta">${m.time}</div>
-        <div class="chat-msg-text">${m.text}</div>
-      </div>
-    `).join('') + '<div class="chat-empty" id="chat-empty" style="display:none"></div>';
+    container.innerHTML = msgs.map(m => {
+      const text = sanitize(m.text);
+      const time = sanitize(m.time);
+      return `<div class="chat-msg">
+        <div class="chat-msg-meta">${time}</div>
+        <div class="chat-msg-text">${text}</div>
+      </div>`;
+    }).join('') + '<div class="chat-empty" id="chat-empty" style="display:none"></div>';
     container.scrollTop = container.scrollHeight;
   }
 
@@ -1005,21 +1044,17 @@
     const alertEl = document.getElementById('report-alert');
     if (!selectedTopic) { alertEl.textContent = 'Konu seç!'; alertEl.className='report-alert show'; return; }
     if (!text) { alertEl.textContent = 'Açıklama yaz!'; alertEl.className='report-alert show'; return; }
+    if (text.length > 1000) { alertEl.textContent = 'Açıklama en fazla 1000 karakter olabilir.'; alertEl.className='report-alert show'; return; }
     const btn = document.getElementById('btn-report-send');
     btn.disabled = true; btn.textContent = '...';
-    const raw = await getSetting('reports') || '[]';
-    let reports = [];
-    try { reports = JSON.parse(raw); } catch { reports = []; }
-    reports.unshift({
-      user: currentUser.username,
+    const { error } = await sb.from(TABLE_REPORTS).insert({
+      username: currentUser.username,
       email: currentUser.email,
       topic: selectedTopic,
       text,
-      time: new Date().toLocaleString('tr-TR', {timeZone:'Europe/Istanbul'})
     });
-    const ok = await setSetting('reports', JSON.stringify(reports));
     btn.disabled = false; btn.textContent = 'Gönder →';
-    if (ok) {
+    if (!error) {
       alertEl.textContent = '✓ Gönderildi!';
       alertEl.style.color = 'var(--emerald)';
       alertEl.className = 'report-alert show';
