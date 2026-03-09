@@ -919,14 +919,16 @@
         <td class="td-main">⛏ ${username}</td>
         <td>${email}</td>
         <td>${date}</td>
-        <td><button class="btn btn-red btn-sm" onclick="revokeUser(${JSON.stringify(u.email)}, ${JSON.stringify(u.username)})">✕ Erişimi Kaldır</button></td>
+        <td><button class="btn btn-red btn-sm" data-email="${email}" data-username="${username}" onclick="revokeUser(this)">✕ Erişimi Kaldır</button></td>
       </tr>`;
     }).join('');
   }
 
   // ── REVOKE USER (admin) ──
-  async function revokeUser(email, username) {
+  async function revokeUser(btn) {
     if (!await verifyAdmin()) return;
+    const email    = btn.dataset.email;
+    const username = btn.dataset.username;
     if (!confirm(`${username} kullanıcısının erişimini kaldırmak istediğine emin misin?`)) return;
     await sb.from(TABLE_APPROVED).delete().eq('email', email);
     showAlert('users-alert', `✓ ${username} kullanıcısının erişimi kaldırıldı.`, 'red');
@@ -966,16 +968,18 @@
         <td>${email}</td>
         <td>${date}</td>
         <td style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-green btn-sm" onclick="approveUser(${JSON.stringify(u.email)}, ${JSON.stringify(u.username)})">✓ Onayla</button>
-          <button class="btn btn-red btn-sm" onclick="rejectUser(${JSON.stringify(u.email)}, ${JSON.stringify(u.username)})">✕ Reddet</button>
+          <button class="btn btn-green btn-sm" data-email="${email}" data-username="${username}" onclick="approveUser(this)">✓ Onayla</button>
+          <button class="btn btn-red btn-sm" data-email="${email}" data-username="${username}" onclick="rejectUser(this)">✕ Reddet</button>
         </td>
       </tr>`;
     }).join('');
   }
 
   // ── APPROVE USER (admin) ──
-  async function approveUser(email, username) {
+  async function approveUser(btn) {
     if (!await verifyAdmin()) return;
+    const email    = btn.dataset.email;
+    const username = btn.dataset.username;
     await sb.from(TABLE_APPROVED).insert({ email, username, approved_at: new Date().toISOString() });
     await sb.from(TABLE_PENDING).delete().eq('email', email);
     showAlert('pending-alert', `✓ ${username} onaylandı ve erişim verildi.`, 'green');
@@ -983,8 +987,10 @@
     await loadUsers();
   }
 
-  async function rejectUser(email, username) {
+  async function rejectUser(btn) {
     if (!await verifyAdmin()) return;
+    const email    = btn.dataset.email;
+    const username = btn.dataset.username;
     if (!confirm(`${username} talebini reddetmek istediğine emin misin?`)) return;
     await sb.from(TABLE_PENDING).delete().eq('email', email);
     showAlert('pending-alert', `✓ ${username} talebi reddedildi.`, 'red');
